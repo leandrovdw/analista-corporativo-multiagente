@@ -184,7 +184,6 @@ python -m scripts.buscar_rag
 ```text
 app/
   agent.py               # expone root_agent para ADK Web
-  config.py              # carga de variables de entorno
   agents/                # orquestador + 3 subagentes
   guardrails/            # guardrail de compliance (before_model_callback)
   prompts/               # prompts de orquestador y RAG
