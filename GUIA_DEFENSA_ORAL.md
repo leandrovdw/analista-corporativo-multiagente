@@ -1,8 +1,9 @@
 # Guía de Defensa Oral — Analista Corporativo Multiagente (PALERMIA S.A.)
 
 Guía de apoyo para la defensa del TP Final. Está organizada alrededor de los seis
-puntos que evalúa la cátedra, con una **estrategia narrativa** sugerida y los
-**puntos clave** para decir en cada tramo.
+puntos que evalúa la cátedra, con una **estrategia narrativa** sugerida, los
+**puntos clave** para decir en cada tramo, y una nota **📁 En el código** que te
+indica en qué archivo mirar mientras explicás.
 
 ---
 
@@ -45,6 +46,10 @@ Qué hace el sistema, paso a paso:
 Módulo, no en pesos. Sin convertir pesos → VM con el valor vigente, la respuesta
 sería incorrecta. El sistema **nunca** decide el procedimiento solo por el monto en pesos.
 
+> 📁 **En el código:** el plan de pasos vive en `app/prompts/orchestrator_prompt.py`
+> (instrucción del orquestador) y se ejecuta desde `app/agents/orchestrator.py`.
+> El punto de entrada es `app/agent.py` (expone `root_agent`).
+
 ---
 
 ## 2. Decisiones de diseño (lo que más se valora)
@@ -64,6 +69,10 @@ sería incorrecta. El sistema **nunca** decide el procedimiento solo por el mont
 > "Separé lo que debe ser exacto (cálculo, guardrails) de lo que es interpretativo
 > (normativa, redacción). Lo exacto va en código determinístico; lo interpretativo,
 > en los agentes."
+
+> 📁 **En el código:** el orquestador y el uso de `AgentTool` en
+> `app/agents/orchestrator.py`; el cálculo determinístico en
+> `app/tools/calculo_tools.py`.
 
 ---
 
@@ -89,6 +98,10 @@ Respuesta final integrada
 **Punto fuerte para destacar:** el orquestador no "sabe" de Qdrant ni de NeonDB.
 Solo sabe *a quién preguntarle*. Eso es separación de responsabilidades real.
 
+> 📁 **En el código:** orquestador en `app/agents/orchestrator.py`; los tres
+> especialistas en `app/agents/rag_agent.py`, `app/agents/valor_modulo_agent.py` y
+> `app/agents/personal_agent.py`.
+
 ---
 
 ## 4. Métricas obtenidas
@@ -110,6 +123,10 @@ debe cumplir; un modelo evaluador (temperatura 0) decide PASS/FAIL, puntaje y
 justificación. La lógica de parseo del veredicto está testeada de forma
 determinística (sin llamar a la red).
 
+> 📁 **En el código:** casos en `evaluations/golden_cases.py`; juez en
+> `evaluations/judge.py`; corrida y métricas en `evaluations/run_golden_cases.py`.
+> Para reproducir: `python -m evaluations.run_golden_cases`.
+
 ---
 
 ## 5. Tecnologías utilizadas
@@ -129,6 +146,10 @@ determinística (sin llamar a la red).
 **Por qué MCP y no consultar la base directo:** MCP desacopla al agente de la
 base. Mañana la fuente podría cambiar (otra base, otra API) y los agentes no se
 enteran: siguen llamando a la misma tool.
+
+> 📁 **En el código:** servidor MCP en `mcp_server/server.py` (esquema en
+> `mcp_server/schema.sql`); conexión del agente al MCP en `app/tools/mcp_tools.py`;
+> RAG en `app/rag/client.py` y `app/rag/ingest.py`; dependencias en `requirements.txt`.
 
 ---
 
@@ -152,6 +173,31 @@ enteran: siguen llamando a la misma tool.
 > "Prioricé que lo mínimo funcione bien y esté testeado, antes que sumar features a
 > medio hacer. Las limitaciones que quedan son conscientes y tienen un camino claro
 > de mejora."
+
+> 📁 **En el código:** el `state` y su extracción en `app/sessions/state_utils.py`
+> y `app/sessions/session_manager.py`; el esquema con la tabla aún no usada en
+> `mcp_server/schema.sql`.
+
+---
+
+## Mapa rápido: funcionalidad → archivo
+
+| Funcionalidad | Archivo(s) |
+|---|---|
+| Punto de entrada (`root_agent`) | `app/agent.py` |
+| Orquestador y coordinación | `app/agents/orchestrator.py` + `app/prompts/orchestrator_prompt.py` |
+| Subagente RAG | `app/agents/rag_agent.py` + `app/prompts/rag_prompt.py` |
+| Subagente Valor Módulo | `app/agents/valor_modulo_agent.py` |
+| Subagente Personal | `app/agents/personal_agent.py` |
+| Cálculo determinístico (VM) | `app/tools/calculo_tools.py` |
+| Guardrails (compliance) | `app/guardrails/compliance_guardrail.py` |
+| Gestión de sesiones y state | `app/sessions/session_manager.py` + `app/sessions/state_utils.py` |
+| Demo de sesiones/state | `scripts/run_demo.py` |
+| RAG (conexión / ingesta) | `app/rag/client.py` + `app/rag/ingest.py` + `app/tools/rag_tools.py` |
+| Servidor MCP + base | `mcp_server/server.py` + `mcp_server/schema.sql` |
+| Conexión agente ↔ MCP | `app/tools/mcp_tools.py` |
+| Evaluación (golden cases + juez) | `evaluations/golden_cases.py` + `evaluations/judge.py` + `evaluations/run_golden_cases.py` |
+| Tests | `tests/test_calculo.py`, `test_state.py`, `test_guardrails.py`, `test_judge.py` |
 
 ---
 
