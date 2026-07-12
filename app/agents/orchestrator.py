@@ -18,6 +18,7 @@ from google.adk.tools.agent_tool import AgentTool
 from app.agents.rag_agent import rag_agent
 from app.agents.valor_modulo_agent import valor_modulo_agent
 from app.agents.personal_agent import personal_agent
+from app.guardrails.compliance_guardrail import compliance_guardrail
 from app.prompts.orchestrator_prompt import ORCHESTRATOR_INSTRUCTION
 from app.tools.calculo_tools import calcular_cantidad_modulos
 
@@ -41,6 +42,8 @@ root_agent = Agent(
         "y estructura organizacional."
     ),
     instruction=ORCHESTRATOR_INSTRUCTION,
+    # Guardrail de compliance: barrera determinística previa al modelo.
+    before_model_callback=compliance_guardrail,
     tools=[
         AgentTool(agent=rag_agent),
         AgentTool(agent=valor_modulo_agent),

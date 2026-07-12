@@ -109,6 +109,63 @@ python mcp_server/server.py
 adk web
 ```
 
+## Gestión de sesiones y uso de state
+
+Una sesión agrupa la interacción de un usuario y contiene un **state**: un
+diccionario estructurado que persiste entre turnos (monto, objeto de compra,
+Valor Módulo, etc.). Se administra con `InMemorySessionService` de ADK y se
+modifica de forma trazable con `EventActions(state_delta=...)` (nunca a mano).
+
+- `app/sessions/session_manager.py` — servicio de sesiones y estado inicial.
+- `app/sessions/state_utils.py` — extrae monto/objeto de la consulta y actualiza el state.
+
+Demo de dos turnos que muestra la persistencia del state:
+
+```bash
+python -m scripts.run_demo
+```
+
+En el turno 1 (`comprar notebooks por $15.000.000`) el sistema guarda
+`objeto="notebooks"` y `monto=15.000.000`. En el turno 2 (`¿Y si fueran
+$80.000.000?`) solo cambia el monto: el objeto **persiste** desde el state.
+
+## Guardrails (seguridad mínima)
+
+`app/guardrails/compliance_guardrail.py` implementa un `before_model_callback`
+que actúa como barrera **determinística** antes de cada llamada al modelo del
+orquestador. Las reglas están definidas como plantillas (`REGLAS_COMPLIANCE`):
+
+- **fraccionamiento**: bloquea pedidos de dividir/fraccionar una compra para
+  eludir el procedimiento o el umbral.
+- **revelar_instrucciones**: guardrail anti prompt-injection.
+
+Si una regla se dispara, el modelo no se ejecuta y se devuelve una respuesta
+institucional; además queda traza en `state["guardrail_activado"]`.
+
+## Evaluación con Golden Cases (LLM-as-a-Judge)
+
+- `evaluations/golden_cases.py` — casos de referencia con criterios esperados.
+- `evaluations/judge.py` — juez semántico: un LLM evalúa si la respuesta cumple
+  los criterios y devuelve veredicto (PASS/FAIL), puntaje y justificación.
+- `evaluations/run_golden_cases.py` — ejecuta cada caso por el agente, lo evalúa
+  y reporta métricas (tasa de aprobación y puntaje promedio).
+
+```bash
+# requiere servidor MCP corriendo + NeonDB + Qdrant
+python -m evaluations.run_golden_cases
+```
+
+## Tests
+
+Tests unitarios de la lógica determinística (no requieren servicios externos):
+
+```bash
+python -m pytest tests/ -q
+```
+
+Cubren: cálculo de VM, extracción y persistencia de state entre turnos,
+detección del guardrail y parseo del veredicto del juez.
+
 ## Utilidades
 
 Probar la búsqueda semántica del RAG de forma aislada:
@@ -129,11 +186,14 @@ app/
   agent.py               # expone root_agent para ADK Web
   config.py              # carga de variables de entorno
   agents/                # orquestador + 3 subagentes
+  guardrails/            # guardrail de compliance (before_model_callback)
   prompts/               # prompts de orquestador y RAG
   rag/                   # client.py (conexión) + ingest.py
   tools/                 # calculo / mcp / rag tools
-  sessions/              # utilidades de state y sesiones ADK
+  sessions/              # gestión de sesiones y utilidades de state
+evaluations/             # golden cases + LLM-as-a-Judge + runner de evaluación
 mcp_server/              # servidor MCP + schema.sql
-scripts/                 # utilidades de prueba (buscar_rag.py)
+scripts/                 # run_demo.py (sesiones/state) + buscar_rag.py
+tests/                   # tests unitarios (pytest)
 docs_rag/                # documentación institucional para el RAG
 ```
