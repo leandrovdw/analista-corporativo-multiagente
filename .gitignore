@@ -1,0 +1,17 @@
+# Entorno y secretos
+.env
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Bases locales / sesiones ADK
+*.db
+app/.adk/
+
+# Sistema operativo
+.DS_Store

@@ -1,0 +1,13 @@
+google-adk
+litellm
+python-dotenv
+openai
+qdrant-client
+mcp
+fastapi
+uvicorn
+psycopg2-binary
+pypdf
+python-docx
+fastmcp
+sqlalchemy
