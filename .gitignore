@@ -16,6 +16,9 @@ app/.adk/
 # Sistema operativo
 .DS_Store
 
+# Archivos temporales de Office (locks al abrir .pptx/.docx)
+~$*
+
 # Material personal de preparación (no forma parte del entregable del TP)
 GUIA_DEFENSA_ORAL.md
 PROMPT_PRESENTACION.md
