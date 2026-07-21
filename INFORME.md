@@ -106,8 +106,12 @@ lo interpretativo, en los agentes.
   correctamente dentro de otro caso, lo que confirma que la consulta funciona.
 - **Juez estricto:** con temperatura 0, el LLM-as-a-Judge puede penalizar detalles
   menores de formato; conviene calibrar los criterios para producción.
-- **Guardrail acotado:** cubre fraccionamiento e inyección de prompt mediante
-  patrones; no es un clasificador general de intención.
+- **Guardrail acotado:** cubre únicamente fraccionamiento (regla de negocio) e
+  inyección de prompt, mediante patrones. **No filtra bienes prohibidos o
+  ilícitos**: por ejemplo, una consulta para comprar "uranio enriquecido" no se
+  bloquea y se procesa como una compra normal. Es una decisión de alcance
+  consciente (el guardrail apunta al compliance de compras, no a un clasificador
+  general de legalidad).
 
 ### Métricas obtenidas
 
@@ -135,6 +139,10 @@ Evaluación con Golden Cases (`python -m evaluations.run_golden_cases`):
 - **Observabilidad ampliada:** trazas por invocación, tiempos por agente y tablero
   de métricas de la evaluación a lo largo del tiempo.
 - **Ampliar el set de golden cases** y calibrar el juez para reducir su rigidez.
+- **Guardrail de bienes prohibidos/ilícitos:** sumar una regla (o un clasificador)
+  que rechace consultas de objetos no permitidos —por ejemplo, uranio enriquecido,
+  armas o sustancias controladas—, reutilizando el mismo mecanismo de plantillas
+  (`REGLAS_COMPLIANCE`) que ya soporta el diseño.
 
 ---
 
