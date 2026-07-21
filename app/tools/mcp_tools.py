@@ -4,8 +4,6 @@ Configuración compartida del MCP.
 Todos los agentes que necesiten acceder al servidor MCP
 importarán este archivo.
 
-De esta forma evitamos duplicar código y eliminamos
-el antiguo mcp_agent.py.
 """
 
 import os
