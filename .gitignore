@@ -16,14 +16,5 @@ app/.adk/
 # Sistema operativo
 .DS_Store
 
-# Archivos temporales de Office (locks al abrir .pptx/.docx)
+# Archivos temporales de Office
 ~$*
-
-# La presentación es un entregable aparte (defensa), no del repo de código
-*.pptx
-
-# Material personal de preparación (no forma parte del entregable del TP)
-GUIA_DEFENSA_ORAL.md
-PROMPT_PRESENTACION.md
-RESUMEN_PRESENTACION.md
-PRUEBAS_DEMO.md
